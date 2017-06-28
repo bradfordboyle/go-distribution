@@ -73,7 +73,11 @@ func (h *Histogram) WriteHist(s *Settings, tokenDict map[string]uint64) {
 	os.Stderr.WriteString(keyColor)
 	os.Stderr.WriteString("\n")
 
-	for i, p := range *pairlist {
+	outputLimit := len(*pairlist)
+	if outputLimit > int(s.Height) {
+		outputLimit = int(s.Height)
+	}
+	for i, p := range (*pairlist)[:outputLimit] {
 		os.Stdout.WriteString(rjust(p.key, maxTokenLen))
 		os.Stdout.WriteString(regularColor)
 		os.Stdout.WriteString("|")
@@ -91,7 +95,7 @@ func (h *Histogram) WriteHist(s *Settings, tokenDict map[string]uint64) {
 		os.Stdout.WriteString(graphColor)
 		os.Stdout.WriteString(h.HistogramBar(s, histWidth, maxVal, p.value))
 
-		if uint(i + 1) == s.Height {
+		if i == outputLimit - 1 {
 			os.Stdout.WriteString(regularColor)
 			break
 		} else {
