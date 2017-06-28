@@ -51,10 +51,15 @@ func (h *Histogram) WriteHist(s *Settings, tokenDict map[string]uint64) {
 		}
 	}
 
-	os.Stderr.WriteString("tokens/lines examined: 279\n")
-	os.Stderr.WriteString(" tokens/lines matched: 17,444,532\n")
-	os.Stderr.WriteString("       histogram keys: 279\n")
-	os.Stderr.WriteString("              runtime: 2.00ms\n")
+	s.EndTime = time.Now().UnixNano()
+	totalMillis := float64(s.EndTime - s.StartTime) / 1e6
+	if s.Verbose {
+		os.Stderr.WriteString(fmt.Sprintf("tokens/lines examined: %d\n", s.TotalObjects))
+		os.Stderr.WriteString(fmt.Sprintf(" tokens/lines matched: %d\n", s.TotalValues))
+		os.Stderr.WriteString(fmt.Sprintf("       histogram keys: %d\n", len(tokenDict)))
+		os.Stderr.WriteString(fmt.Sprintf("              runtime: %.2fms\n", totalMillis))
+	}
+
 
 	histWidth := int(s.Width) - (maxTokenLen + 1) - (maxValueWidth + 1) - (maxPctWidth + 1) - 1
 
@@ -235,6 +240,9 @@ func (i *InputReader) PruneKeys(s *Settings) {
 }
 
 func (i * InputReader) ReadPretalliedTokens(s *Settings) {
+	// the input is already just a series of keys with the frequency of the
+	// keys precomputed, as in "du -sb" - vk means the number is first, key
+	// second. kv means key first, number second
 	vk := regexp.MustCompile(`^\s*(\d+)\s+(.+)$`)
 
 	scanner := bufio.NewScanner(os.Stdin)
@@ -245,13 +253,15 @@ func (i * InputReader) ReadPretalliedTokens(s *Settings) {
 		// TODO: handle the error here
 		value, _ := strconv.ParseUint(res[1], 10, 64)
 		i.TokenDict[key] = value
+		s.TotalValues += value
+		s.TotalObjects += 1
 	}
 }
 
 type Settings struct {
 	TotalMillis uint
-	StartTime uint
-	EndTime uint
+	StartTime int64
+	EndTime int64
 	WidthArg uint
 	HeightArg uint
 	Width uint
@@ -274,7 +284,7 @@ type Settings struct {
 	PctColour  string
 	GraphColour  string
 	TotalObjects uint
-	TotalValues uint
+	TotalValues uint64
 	KeyPruneInterval uint
 	MaxKeys uint
 	UnicodeMode bool
@@ -288,7 +298,7 @@ func NewSettings() *Settings {
 	// default settings
 	s := &Settings{
 		TotalMillis: 0,
-		StartTime: uint(time.Now().UnixNano() / 1000),
+		StartTime: time.Now().UnixNano(),
 		EndTime: 0,
 		WidthArg: 0,
 		HeightArg: 0,
@@ -455,6 +465,9 @@ func NewSettings() *Settings {
 	// of throwing away high-count values that appear sparingly in the data
 	if s.MaxKeys < s.Height + 3000 {
 		s.MaxKeys = s.Height + 3000
+		if s.Verbose {
+			os.Stderr.WriteString(fmt.Sprintf("Update MaxKeys to %d (height + 3000)\n", s.MaxKeys))
+		}
 	}
 
 	if s.Verbose {
