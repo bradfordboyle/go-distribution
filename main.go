@@ -19,12 +19,6 @@ type Histogram struct {
 }
 
 func (h *Histogram) WriteHist(s *Settings, tokenDict map[string]uint64) {
-	// FIXME: pull this out somewhere
-	regularColor := "\u001b[0m"
-	keyColor := "\u001b[32m"
-	ctColor := "\u001b[34m"
-	pctColor := "\u001b[35m"
-	graphColor := "\u001b[37m"
 	maxTokenLen := 0
 	maxVal := uint64(0)
 
@@ -52,7 +46,7 @@ func (h *Histogram) WriteHist(s *Settings, tokenDict map[string]uint64) {
 		}
 
 		// FIXME: this should be in settings
-		if i > 33 {
+		if uint(i) >= s.Height - 1 {
 			break
 		}
 	}
@@ -70,7 +64,7 @@ func (h *Histogram) WriteHist(s *Settings, tokenDict map[string]uint64) {
 	os.Stderr.WriteString(" ")
 	os.Stderr.WriteString(ljust("(Pct)", maxPctWidth))
 	os.Stderr.WriteString("  Histogram")
-	os.Stderr.WriteString(keyColor)
+	os.Stderr.WriteString(s.KeyColour)
 	os.Stderr.WriteString("\n")
 
 	outputLimit := len(*pairlist)
@@ -79,27 +73,27 @@ func (h *Histogram) WriteHist(s *Settings, tokenDict map[string]uint64) {
 	}
 	for i, p := range (*pairlist)[:outputLimit] {
 		os.Stdout.WriteString(rjust(p.key, maxTokenLen))
-		os.Stdout.WriteString(regularColor)
+		os.Stdout.WriteString(s.RegularColour)
 		os.Stdout.WriteString("|")
-		os.Stdout.WriteString(ctColor)
+		os.Stdout.WriteString(s.CtColour)
 
 		outVal := fmt.Sprintf("%d", p.value)
 		os.Stdout.WriteString(rjust(outVal, maxValueWidth))
 		os.Stdout.WriteString(" ")
 
 		pctStr := fmt.Sprintf("(%2.2f%%)", float64(p.value) * 1.0 / float64(totalValue) * 100.0)
-		os.Stdout.WriteString(pctColor)
+		os.Stdout.WriteString(s.PctColour)
 		os.Stdout.WriteString(rjust(pctStr, maxPctWidth))
 		os.Stdout.WriteString(" ")
 
-		os.Stdout.WriteString(graphColor)
+		os.Stdout.WriteString(s.GraphColour)
 		os.Stdout.WriteString(h.HistogramBar(s, histWidth, maxVal, p.value))
 
 		if i == outputLimit - 1 {
-			os.Stdout.WriteString(regularColor)
+			os.Stdout.WriteString(s.RegularColour)
 			break
 		} else {
-			os.Stdout.WriteString(keyColor)
+			os.Stdout.WriteString(s.KeyColour)
 		}
 		os.Stdout.WriteString("\n")
 	}
