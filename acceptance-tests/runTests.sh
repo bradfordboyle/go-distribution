@@ -14,12 +14,15 @@ echo ""
 printf "Running test: 1. "
 cat stdin.01.txt | $distribution --rcfile=../distributionrc --graph --height=35 --width=120 --char=dt --color --verbose > stdout.01.actual.txt 2> stderr.01.actual.txt
 
+printf "2. "
+cat stdin.02.txt | awk '{print $4" "$5}' | $distribution --rcfile=../distributionrc -s=med --width=110 --tokenize=word --match=word -v -c > stdout.02.actual.txt 2> stderr.02.actual.txt
+
 echo "done."
 
 # be sure output is proper
 err=0
 printf "Comparing results: "
-for i in 01 ; do
+for i in 01 02 ; do
 	printf "$i. \n"
 	diff -w stdout.$i.expected.txt stdout.$i.actual.txt
 	if [ $? -ne 0 ]; then
