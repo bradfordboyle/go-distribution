@@ -12,6 +12,7 @@ import (
 	"os/user"
 	"path"
 	"log"
+	"github.com/dustin/go-humanize"
 )
 
 type Histogram struct {
@@ -54,10 +55,11 @@ func (h *Histogram) WriteHist(s *Settings, tokenDict map[string]uint64) {
 	s.EndTime = time.Now().UnixNano()
 	totalMillis := float64(s.EndTime - s.StartTime) / 1e6
 	if s.Verbose {
-		os.Stderr.WriteString(fmt.Sprintf("tokens/lines examined: %d\n", s.TotalObjects))
-		os.Stderr.WriteString(fmt.Sprintf(" tokens/lines matched: %d\n", s.TotalValues))
+
+		os.Stderr.WriteString(fmt.Sprintf("tokens/lines examined: %s\n", humanize.Comma(int64(s.TotalObjects))))
+		os.Stderr.WriteString(fmt.Sprintf(" tokens/lines matched: %s\n", humanize.Comma(int64(s.TotalValues))))
 		os.Stderr.WriteString(fmt.Sprintf("       histogram keys: %d\n", len(tokenDict)))
-		os.Stderr.WriteString(fmt.Sprintf("              runtime: %.2fms\n", totalMillis))
+		os.Stderr.WriteString(fmt.Sprintf("              runtime: %sms\n", humanize.Commaf(totalMillis)))
 	}
 
 
@@ -190,7 +192,7 @@ func (i *InputReader) TokenizeInput(s *Settings) {
 	pt := regexp.MustCompile(s.Tokenize)
 	pm := regexp.MustCompile(s.MatchRegexp)
 
-	//nextStat := time.Now().Add(time.Duration(s.StatInterval))
+	nextStat := time.Now().Add(time.Duration(s.StatInterval))
 
 	pruneObjects := uint(0)
 	scanner := bufio.NewScanner(os.Stdin)
@@ -220,6 +222,16 @@ func (i *InputReader) TokenizeInput(s *Settings) {
 		if pruneObjects >= s.KeyPruneInterval {
 			i.PruneKeys(s)
 			pruneObjects = 0
+		}
+
+		if s.Verbose && time.Now().After(nextStat) {
+			os.Stderr.WriteString(
+				fmt.Sprintf(
+					"tokens/lines examined: %s ; hash prunes: %s...\r",
+					humanize.Comma(int64(s.TotalObjects)),
+					humanize.Comma(int64(s.NumPrunes)),
+			))
+			nextStat = time.Now().Add(time.Duration(s.StatInterval))
 		}
 	}
 }
@@ -313,7 +325,7 @@ func NewSettings() *Settings {
 		Size: "",
 		Tokenize: "",
 		MatchRegexp: ".",
-		StatInterval: 1.0,
+		StatInterval: 1e9,
 		NumPrunes: 0,
 		ColourPalette: "0,0,32,35,34",
 		RegularColour: "",
@@ -468,10 +480,6 @@ func NewSettings() *Settings {
 		if s.Verbose {
 			os.Stderr.WriteString(fmt.Sprintf("Update MaxKeys to %d (height + 3000)\n", s.MaxKeys))
 		}
-	}
-
-	if s.Verbose {
-		os.Stderr.WriteString(fmt.Sprintf("Updated maxKeys to %d (height + 3000)\n", s.MaxKeys))
 	}
 
 	// colour palette
