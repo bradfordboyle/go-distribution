@@ -1,22 +1,21 @@
 package main
 
 import (
-	"fmt"
 	"bufio"
+	"fmt"
+	"github.com/dustin/go-humanize"
+	"log"
 	"os"
-	"strings"
-	"regexp"
-	"strconv"
-	"sort"
-	"time"
 	"os/user"
 	"path"
-	"log"
-	"github.com/dustin/go-humanize"
+	"regexp"
+	"sort"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type Histogram struct {
-
 }
 
 func (h *Histogram) WriteHist(s *Settings, tokenDict map[string]uint64) {
@@ -34,7 +33,7 @@ func (h *Histogram) WriteHist(s *Settings, tokenDict map[string]uint64) {
 
 		if i == 0 {
 			maxValueWidth = len(fmt.Sprintf("%d", p.value))
-			maxPctWidth = len(fmt.Sprintf("(%2.2f%%)", float64(p.value) * 1.0 / float64(totalValue) * 100.0))
+			maxPctWidth = len(fmt.Sprintf("(%2.2f%%)", float64(p.value)*1.0/float64(totalValue)*100.0))
 		}
 
 		tokenLen := len(p.key)
@@ -47,13 +46,13 @@ func (h *Histogram) WriteHist(s *Settings, tokenDict map[string]uint64) {
 		}
 
 		// FIXME: this should be in settings
-		if uint(i) >= s.Height - 1 {
+		if uint(i) >= s.Height-1 {
 			break
 		}
 	}
 
 	s.EndTime = time.Now().UnixNano()
-	totalMillis := float64(s.EndTime - s.StartTime) / 1e6
+	totalMillis := float64(s.EndTime-s.StartTime) / 1e6
 	if s.Verbose {
 
 		os.Stderr.WriteString(fmt.Sprintf("tokens/lines examined: %s\n", humanize.Comma(int64(s.TotalObjects))))
@@ -61,7 +60,6 @@ func (h *Histogram) WriteHist(s *Settings, tokenDict map[string]uint64) {
 		os.Stderr.WriteString(fmt.Sprintf("       histogram keys: %d\n", len(tokenDict)))
 		os.Stderr.WriteString(fmt.Sprintf("              runtime: %sms\n", humanize.Commaf(totalMillis)))
 	}
-
 
 	histWidth := int(s.Width) - (maxTokenLen + 1) - (maxValueWidth + 1) - (maxPctWidth + 1) - 1
 
@@ -88,7 +86,7 @@ func (h *Histogram) WriteHist(s *Settings, tokenDict map[string]uint64) {
 		os.Stdout.WriteString(rjust(outVal, maxValueWidth))
 		os.Stdout.WriteString(" ")
 
-		pctStr := fmt.Sprintf("(%2.2f%%)", float64(p.value) * 1.0 / float64(totalValue) * 100.0)
+		pctStr := fmt.Sprintf("(%2.2f%%)", float64(p.value)*1.0/float64(totalValue)*100.0)
 		os.Stdout.WriteString(s.PctColour)
 		os.Stdout.WriteString(rjust(pctStr, maxPctWidth))
 		os.Stdout.WriteString(" ")
@@ -96,7 +94,7 @@ func (h *Histogram) WriteHist(s *Settings, tokenDict map[string]uint64) {
 		os.Stdout.WriteString(s.GraphColour)
 		os.Stdout.WriteString(h.HistogramBar(s, histWidth, maxVal, p.value))
 
-		if i == outputLimit - 1 {
+		if i == outputLimit-1 {
 			os.Stdout.WriteString(s.RegularColour)
 			break
 		} else {
@@ -230,7 +228,7 @@ func (i *InputReader) TokenizeInput(s *Settings) {
 					"tokens/lines examined: %s ; hash prunes: %s...\r",
 					humanize.Comma(int64(s.TotalObjects)),
 					humanize.Comma(int64(s.NumPrunes)),
-			))
+				))
 			nextStat = time.Now().Add(time.Duration(s.StatInterval))
 		}
 	}
@@ -243,7 +241,7 @@ func (i *InputReader) PruneKeys(s *Settings) {
 
 	for i, p := range *pl {
 		prunedTokenCounts[p.key] = p.value
-		if uint(i) + 1 > s.MaxKeys {
+		if uint(i)+1 > s.MaxKeys {
 			break
 		}
 	}
@@ -251,14 +249,14 @@ func (i *InputReader) PruneKeys(s *Settings) {
 	s.NumPrunes += 1
 }
 
-func (i * InputReader) ReadPretalliedTokens(s *Settings) {
+func (i *InputReader) ReadPretalliedTokens(s *Settings) {
 	// the input is already just a series of keys with the frequency of the
 	// keys precomputed, as in "du -sb" - vk means the number is first, key
 	// second. kv means key first, number second
 	vk := regexp.MustCompile(`^\s*(\d+)\s+(.+)$`)
 
 	scanner := bufio.NewScanner(os.Stdin)
-	for scanner. Scan() {
+	for scanner.Scan() {
 		line := scanner.Text()
 		res := vk.FindStringSubmatch(line)
 		key := res[2]
@@ -271,75 +269,75 @@ func (i * InputReader) ReadPretalliedTokens(s *Settings) {
 }
 
 type Settings struct {
-	TotalMillis uint
-	StartTime int64
-	EndTime int64
-	WidthArg uint
-	HeightArg uint
-	Width uint
-	Height uint
-	HistogramChar string
+	TotalMillis      uint
+	StartTime        int64
+	EndTime          int64
+	WidthArg         uint
+	HeightArg        uint
+	Width            uint
+	Height           uint
+	HistogramChar    string
 	ColourisedOutput bool
-	Logarithmic bool
-	NumOnly string
-	Verbose bool
-	GraphValues string
-	Size string
-	Tokenize string
-	MatchRegexp string
-	StatInterval int
-	NumPrunes uint
-	ColourPalette string
-	RegularColour string
-	KeyColour  string
-	CtColour  string
-	PctColour  string
-	GraphColour  string
-	TotalObjects uint
-	TotalValues uint64
+	Logarithmic      bool
+	NumOnly          string
+	Verbose          bool
+	GraphValues      string
+	Size             string
+	Tokenize         string
+	MatchRegexp      string
+	StatInterval     int
+	NumPrunes        uint
+	ColourPalette    string
+	RegularColour    string
+	KeyColour        string
+	CtColour         string
+	PctColour        string
+	GraphColour      string
+	TotalObjects     uint
+	TotalValues      uint64
 	KeyPruneInterval uint
-	MaxKeys uint
-	UnicodeMode bool
-	CharWidth float32
-	GraphChars []string
-	PartialBlocks []string
-	PartialLines []string
+	MaxKeys          uint
+	UnicodeMode      bool
+	CharWidth        float32
+	GraphChars       []string
+	PartialBlocks    []string
+	PartialLines     []string
 }
 
 func NewSettings() *Settings {
 	// default settings
 	s := &Settings{
-		TotalMillis: 0,
-		StartTime: time.Now().UnixNano(),
-		EndTime: 0,
-		WidthArg: 0,
-		HeightArg: 0,
-		Width: 80,
-		Height: 15,
-		HistogramChar: "-",
+		TotalMillis:      0,
+		StartTime:        time.Now().UnixNano(),
+		EndTime:          0,
+		WidthArg:         0,
+		HeightArg:        0,
+		Width:            80,
+		Height:           15,
+		HistogramChar:    "-",
 		ColourisedOutput: false,
-		Logarithmic: false,
-		NumOnly: "XXX",
-		Verbose: false,
-		GraphValues: "",
-		Size: "",
-		Tokenize: "",
-		MatchRegexp: ".",
-		StatInterval: 1e9,
-		NumPrunes: 0,
-		ColourPalette: "0,0,32,35,34",
-		RegularColour: "",
-		KeyColour: "",
-		CtColour: "",
-		PctColour: "",
-		GraphColour: "",
-		TotalObjects: 0,
-		TotalValues: 0,
+		Logarithmic:      false,
+		NumOnly:          "XXX",
+		Verbose:          false,
+		GraphValues:      "",
+		Size:             "",
+		Tokenize:         "",
+		MatchRegexp:      ".",
+		StatInterval:     1e9,
+		NumPrunes:        0,
+		ColourPalette:    "0,0,32,35,34",
+		RegularColour:    "",
+		KeyColour:        "",
+		CtColour:         "",
+		PctColour:        "",
+		GraphColour:      "",
+		TotalObjects:     0,
+		TotalValues:      0,
 		KeyPruneInterval: 1500000,
-		MaxKeys: 5000,
-		UnicodeMode: false,
-		CharWidth: 1.0,
-		GraphChars: []string{},
+		MaxKeys:          5000,
+		UnicodeMode:      false,
+		CharWidth:        1.0,
+		GraphChars:       []string{},
 		PartialBlocks:    []string{"▏", "▎", "▍", "▌", "▋", "▊", "▉", "█"},
 		PartialLines:     []string{"╸", "╾", "━"},
 	}
@@ -466,8 +464,8 @@ func NewSettings() *Settings {
 	}
 
 	// override variables if they were explicitly given
-	if s.WidthArg  != 0 {
-		s.Width  = s.WidthArg
+	if s.WidthArg != 0 {
+		s.Width = s.WidthArg
 	}
 	if s.HeightArg != 0 {
 		s.Height = s.HeightArg
@@ -475,7 +473,7 @@ func NewSettings() *Settings {
 
 	// maxKeys should be at least a few thousand greater than height to reduce odds
 	// of throwing away high-count values that appear sparingly in the data
-	if s.MaxKeys < s.Height + 3000 {
+	if s.MaxKeys < s.Height+3000 {
 		s.MaxKeys = s.Height + 3000
 		if s.Verbose {
 			os.Stderr.WriteString(fmt.Sprintf("Update MaxKeys to %d (height + 3000)\n", s.MaxKeys))
@@ -494,7 +492,6 @@ func NewSettings() *Settings {
 		s.PctColour = fmt.Sprintf("\u001b[%sm", cl[3])
 		s.GraphColour = fmt.Sprintf("\u001b[%sm", cl[4])
 	}
-
 
 	// some useful ASCII-->utf-8 substitutions
 	switch s.HistogramChar {
@@ -517,7 +514,7 @@ func NewSettings() *Settings {
 		s.UnicodeMode = true
 		s.HistogramChar = "•"
 	case "sq":
-		s.UnicodeMode = true;
+		s.UnicodeMode = true
 		s.HistogramChar = "□"
 	}
 
@@ -526,7 +523,7 @@ func NewSettings() *Settings {
 		s.CharWidth = 0.125
 		s.GraphChars = s.PartialBlocks
 	} else if s.HistogramChar == "pl" {
-		s.CharWidth = 0.3334;
+		s.CharWidth = 0.3334
 		s.GraphChars = s.PartialLines
 	}
 
@@ -545,7 +542,7 @@ func doUsage(s *Settings) {
 }
 
 type pair struct {
-	key string
+	key   string
 	value uint64
 }
 
