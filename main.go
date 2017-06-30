@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/dustin/go-humanize"
 	"log"
 	"os"
 	"os/exec"
@@ -14,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/dustin/go-humanize"
 )
 
 type Histogram struct {
@@ -30,7 +31,7 @@ func (h *Histogram) WriteHist(s *Settings, tokenDict map[string]uint64) {
 	sort.Sort(sort.Reverse(pairlist))
 	totalValue := pairlist.TotalValues()
 
-	for i, p := range *pairlist {
+	for i, p := range pairlist {
 
 		if i == 0 {
 			maxValueWidth = len(fmt.Sprintf("%d", p.value))
@@ -72,11 +73,11 @@ func (h *Histogram) WriteHist(s *Settings, tokenDict map[string]uint64) {
 	os.Stderr.WriteString(s.KeyColour)
 	os.Stderr.WriteString("\n")
 
-	outputLimit := len(*pairlist)
+	outputLimit := pairlist.Len()
 	if outputLimit > int(s.Height) {
 		outputLimit = int(s.Height)
 	}
-	for i, p := range (*pairlist)[:outputLimit] {
+	for i, p := range (pairlist)[:outputLimit] {
 		os.Stdout.WriteString(rjust(p.key, maxTokenLen))
 		os.Stdout.WriteString(s.RegularColour)
 		os.Stdout.WriteString("|")
@@ -239,7 +240,7 @@ func (i *InputReader) PruneKeys(s *Settings) {
 	pl := NewPairList(i.TokenDict)
 	sort.Sort(sort.Reverse(pl))
 
-	for i, p := range *pl {
+	for i, p := range pl {
 		prunedTokenCounts[p.key] = p.value
 		if uint(i)+1 > s.MaxKeys {
 			break
@@ -603,34 +604,36 @@ type pair struct {
 	value uint64
 }
 
-type pairlist []pair
+type Pairlist []pair
 
-func (pl pairlist) Len() int { return len(pl) }
+func (pl Pairlist) Len() int { return len(pl) }
 
-func (pl pairlist) Less(i, j int) bool {
+func (pl Pairlist) Less(i, j int) bool {
 	if pl[i].value == pl[j].value {
 		return pl[i].key < pl[j].key
 	}
 	return pl[i].value < pl[j].value
 }
 
-func (pl pairlist) Swap(i, j int) {
+func (pl Pairlist) Swap(i, j int) {
 	pl[i], pl[j] = pl[j], pl[i]
 }
 
-func NewPairList(m map[string]uint64) *pairlist {
-	p := make(pairlist, len(m))
+// NewPairList returns a Pairlist containing pairs (key, value) from the give map
+func NewPairList(m map[string]uint64) Pairlist {
+	p := make(Pairlist, len(m))
 
 	i := 0
 	for k, v := range m {
 		p[i] = pair{k, v}
-		i += 1
+		i++
 	}
 
-	return &p
+	return p
 }
 
-func (pl *pairlist) TotalValues() uint64 {
+// TotalValues returns the sum of values across all pairs in the PairList
+func (pl *Pairlist) TotalValues() uint64 {
 	totalValue := uint64(0)
 	for _, p := range *pl {
 		totalValue += p.value
