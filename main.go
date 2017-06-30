@@ -6,6 +6,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"log"
 	"os"
+	"os/exec"
 	"os/user"
 	"path"
 	"regexp"
@@ -45,7 +46,6 @@ func (h *Histogram) WriteHist(s *Settings, tokenDict map[string]uint64) {
 			maxVal = p.value
 		}
 
-		// FIXME: this should be in settings
 		if uint(i) >= s.Height-1 {
 			break
 		}
@@ -260,8 +260,10 @@ func (i *InputReader) ReadPretalliedTokens(s *Settings) {
 		line := scanner.Text()
 		res := vk.FindStringSubmatch(line)
 		key := res[2]
-		// TODO: handle the error here
-		value, _ := strconv.ParseUint(res[1], 10, 64)
+		value, err := strconv.ParseUint(res[1], 10, 64)
+		if err != nil {
+			log.Fatal(err)
+		}
 		i.TokenDict[key] = value
 		s.TotalValues += value
 		s.TotalObjects += 1
@@ -269,6 +271,7 @@ func (i *InputReader) ReadPretalliedTokens(s *Settings) {
 }
 
 type Settings struct {
+	ScriptName       string
 	TotalMillis      uint
 	StartTime        int64
 	EndTime          int64
@@ -307,6 +310,7 @@ type Settings struct {
 func NewSettings() *Settings {
 	// default settings
 	s := &Settings{
+		ScriptName:       os.Args[0],
 		TotalMillis:      0,
 		StartTime:        time.Now().UnixNano(),
 		EndTime:          0,
@@ -432,8 +436,7 @@ func NewSettings() *Settings {
 	// first, size, which might be further overridden by width/height later
 	if s.Size == "full" || s.Size == "fl" || s.Size == "f" {
 		// tput will tell us the term width/height even if input is stdin
-		// TODO: actually call tput here
-		s.Width, s.Height = 238, 61
+		s.Width, s.Height = callTput()
 		// need room for the verbosity output
 		if s.Verbose {
 			s.Height -= 4
@@ -537,8 +540,62 @@ func NewSettings() *Settings {
 
 func doUsage(s *Settings) {
 	os.Stdout.WriteString("")
-	os.Stdout.WriteString(fmt.Sprintf("usage: <commandWithOutput> | %s\n", os.Args[0]))
-
+	os.Stdout.WriteString(fmt.Sprintf("usage: <commandWithOutput> | %s\n", s.ScriptName))
+	os.Stdout.WriteString("         [--size={sm|med|lg|full} | --width=<width> --height=<height>]\n")
+	os.Stdout.WriteString("         [--color] [--palette=r,k,c,p,g]\n")
+	os.Stdout.WriteString("         [--tokenize=<tokenChar>]\n")
+	os.Stdout.WriteString("         [--graph[=[kv|vk]] [--numonly[=derivative,diff|abs,absolute,actual]]\n")
+	os.Stdout.WriteString("         [--char=<barChars>|<substitutionString>]\n")
+	os.Stdout.WriteString("         [--help] [--verbose]\n")
+	os.Stdout.WriteString(fmt.Sprintf("  --keys=K       every %d values added, prune hash to K keys (default 5000)\n", s.KeyPruneInterval))
+	os.Stdout.WriteString("  --char=C       character(s) to use for histogram character, some substitutions follow:\n")
+	os.Stdout.WriteString("        pl       Use 1/3-width unicode partial lines to simulate 3x actual terminal width\n")
+	os.Stdout.WriteString("        pb       Use 1/8-width unicode partial blocks to simulate 8x actual terminal width\n")
+	os.Stdout.WriteString("        ba       (▬) Bar\n")
+	os.Stdout.WriteString("        bl       (Ξ) Building\n")
+	os.Stdout.WriteString("        em       (—) Emdash\n")
+	os.Stdout.WriteString("        me       (⋯) Mid-Elipses\n")
+	os.Stdout.WriteString("        di       (♦) Diamond\n")
+	os.Stdout.WriteString("        dt       (•) Dot\n")
+	os.Stdout.WriteString("        sq       (□) Square\n")
+	os.Stdout.WriteString("  --color        colourise the output\n")
+	os.Stdout.WriteString("  --graph[=G]    input is already key/value pairs. vk is default:\n")
+	os.Stdout.WriteString("        kv       input is ordered key then value\n")
+	os.Stdout.WriteString("        vk       input is ordered value then key\n")
+	os.Stdout.WriteString("  --height=N     height of histogram, headers non-inclusive, overrides --size\n")
+	os.Stdout.WriteString("  --help         get help\n")
+	os.Stdout.WriteString("  --logarithmic  logarithmic graph\n")
+	os.Stdout.WriteString("  --match=RE     only match lines (or tokens) that match this regexp, some substitutions follow:\n")
+	os.Stdout.WriteString("        word     ^[A-Z,a-z]+\\$ - tokens/lines must be entirely alphabetic\n")
+	os.Stdout.WriteString("        num      ^\\d+\\$        - tokens/lines must be entirely numeric\n")
+	os.Stdout.WriteString("  --numonly[=N]  input is numerics, simply graph values without labels\n")
+	os.Stdout.WriteString("        actual   input is just values (default - abs, absolute are synonymous to actual)\n")
+	os.Stdout.WriteString("        diff     input monotonically-increasing, graph differences (of 2nd and later values)\n")
+	os.Stdout.WriteString("  --palette=P    comma-separated list of ANSI colour values for portions of the output\n")
+	os.Stdout.WriteString("                 in this order: regular, key, count, percent, graph. implies --color.\n")
+	os.Stdout.WriteString("  --rcfile=F     use this rcfile instead of ~/.distributionrc - must be first argument!\n")
+	os.Stdout.WriteString("  --size=S       size of histogram, can abbreviate to single character, overridden by --width/--height\n")
+	os.Stdout.WriteString("        small    40x10\n")
+	os.Stdout.WriteString("        medium   80x20\n")
+	os.Stdout.WriteString("        large    120x30\n")
+	os.Stdout.WriteString("        full     terminal width x terminal height (approximately)\n")
+	os.Stdout.WriteString("  --tokenize=RE  split input on regexp RE and make histogram of all resulting tokens\n")
+	os.Stdout.WriteString("        word     [^\\w] - split on non-word characters like colons, brackets, commas, etc\n")
+	os.Stdout.WriteString("        white    \\s    - split on whitespace\n")
+	os.Stdout.WriteString("  --width=N      width of the histogram report, N characters, overrides --size\n")
+	os.Stdout.WriteString("  --verbose      be verbose\n")
+	os.Stdout.WriteString("\n")
+	os.Stdout.WriteString("You can use single-characters options, like so: -h=25 -w=20 -v. You must still include the =\n")
+	os.Stdout.WriteString("\n")
+	os.Stdout.WriteString("Samples:\n")
+	os.Stdout.WriteString(fmt.Sprintf("  du -sb /etc/* | %s --palette=0,37,34,33,32 --graph\n", s.ScriptName))
+	os.Stdout.WriteString(fmt.Sprintf("  du -sk /etc/* | awk '{print $2\" \"$1}' | %s --graph=kv\n", s.ScriptName))
+	os.Stdout.WriteString(fmt.Sprintf("  zcat /var/log/syslog*gz | %s --char=o --tokenize=white\n", s.ScriptName))
+	os.Stdout.WriteString(fmt.Sprintf("  zcat /var/log/syslog*gz | awk '{print \\$5}'  | %s -t=word -m-word -h=15 -c=/\n", s.ScriptName))
+	os.Stdout.WriteString(fmt.Sprintf("  zcat /var/log/syslog*gz | cut -c 1-9        | %s -width=60 -height=10 -char=em\n", s.ScriptName))
+	os.Stdout.WriteString(fmt.Sprintf("  find /etc -type f       | cut -c 6-         | %s -tokenize=/ -w=90 -h=35 -c=dt\n", s.ScriptName))
+	os.Stdout.WriteString(fmt.Sprintf("  cat /usr/share/dict/words | awk '{print length(\\$1)}' | %s -c=* -w=50 -h=10 | sort -n\n", s.ScriptName))
+	os.Stdout.WriteString("\n")
 }
 
 type pair struct {
@@ -580,6 +637,31 @@ func (pl *pairlist) TotalValues() uint64 {
 	}
 
 	return totalValue
+}
+
+func callTput() (uint, uint) {
+	cmdName := "echo"
+	cmdArgs := []string{"$(tput cols) $(tput lines)"}
+
+	var (
+		cmdOut  []byte
+		err     error
+		columns uint64
+		lines   uint64
+	)
+
+	if cmdOut, err = exec.Command(cmdName, cmdArgs...).Output(); err != nil {
+		log.Fatal(err)
+	}
+	columnLinesStr := strings.Split(string(cmdOut), " ")
+	if columns, err = strconv.ParseUint(columnLinesStr[0], 10, 16); err != nil {
+		log.Fatal(err)
+	}
+	if lines, err = strconv.ParseUint(columnLinesStr[1], 10, 16); err != nil {
+		log.Fatal(err)
+	}
+
+	return uint(columns), uint(lines)
 }
 
 func main() {
