@@ -5,7 +5,7 @@ import (
 )
 
 func TestNewPairList(t *testing.T) {
-	m := map[string]uint64{
+	m := map[string]uint{
 		"rsc": 3711,
 		"r":   2138,
 		"gri": 1908,
@@ -24,15 +24,13 @@ func TestNewPairList(t *testing.T) {
 }
 
 func TestPairlist_Len(t *testing.T) {
-	m := map[string]uint64{
-		"rsc": 3711,
-		"r":   2138,
-		"gri": 1908,
-		"adg": 912,
-	}
-	pl := NewPairList(m)
-	if pl.Len() != 4 {
-		t.Errorf("PairList had the wrong value; expected %d, actual %d", len(m), pl.Len())
+	pl := Pairlist([]pair{
+		{key: "a", value: 1},
+		{key: "a", value: 2},
+		{key: "b", value: 1},
+	})
+	if pl.Len() != 3 {
+		t.Errorf("PairList had the wrong value; expected %d, actual %d", 3, pl.Len())
 	}
 }
 
