@@ -1,7 +1,8 @@
-package main
+package histogram
 
 import (
 	"bytes"
+	"distribution/settings"
 	"testing"
 )
 
@@ -34,7 +35,7 @@ func TestHistogram_HistogramBar(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run("something", func(t *testing.T) {
-			s := NewSettings("testing", tc.args)
+			s := settings.NewSettings("testing", tc.args)
 			h := NewHistogram(s)
 
 			bar := h.HistogramBar(tc.histWidth, tc.maxVal, tc.barVal)
@@ -68,14 +69,14 @@ func TestHistogram_WriteHist(t *testing.T) {
 		{
 			name:     "PairList w/ two tokens",
 			args:     []string{RC_FILE, KV, WIDTH},
-			pl:       Pairlist{pair{"a", 1}, pair{"b", 2}},
+			pl:       Pairlist{Pair{"a", 1}, Pair{"b", 2}},
 			expected: "b|2 (66.67%) --\na|1 (33.33%) -",
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewSettings("testing", tc.args)
+			s := settings.NewSettings("testing", tc.args)
 			h := NewHistogram(s)
 			buf := new(bytes.Buffer)
 

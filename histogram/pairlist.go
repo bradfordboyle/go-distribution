@@ -1,19 +1,19 @@
-package main
+package histogram
 
-type pair struct {
-	key   string
-	value uint
+type Pair struct {
+	Key   string
+	Value uint
 }
 
-type Pairlist []pair
+type Pairlist []Pair
 
 func (pl Pairlist) Len() int { return len(pl) }
 
 func (pl Pairlist) Less(i, j int) bool {
-	if pl[i].value == pl[j].value {
-		return pl[i].key < pl[j].key
+	if pl[i].Value == pl[j].Value {
+		return pl[i].Key < pl[j].Key
 	}
-	return pl[i].value < pl[j].value
+	return pl[i].Value < pl[j].Value
 }
 
 func (pl Pairlist) Swap(i, j int) {
@@ -26,7 +26,7 @@ func NewPairList(m map[string]uint) Pairlist {
 
 	i := 0
 	for k, v := range m {
-		p[i] = pair{k, v}
+		p[i] = Pair{k, v}
 		i++
 	}
 
@@ -37,7 +37,7 @@ func NewPairList(m map[string]uint) Pairlist {
 func (pl *Pairlist) TotalValues() uint {
 	totalValue := uint(0)
 	for _, p := range *pl {
-		totalValue += p.value
+		totalValue += p.Value
 	}
 
 	return totalValue

@@ -1,4 +1,4 @@
-package main
+package histogram
 
 import (
 	"fmt"
@@ -8,11 +8,12 @@ import (
 	"strings"
 	"time"
 
+	"distribution/settings"
 	"github.com/dustin/go-humanize"
 )
 
 type Histogram struct {
-	s            *Settings
+	s            *settings.Settings
 	height       uint
 	width        uint
 	keyColor     string
@@ -22,7 +23,7 @@ type Histogram struct {
 	graphColor   string
 }
 
-func NewHistogram(s *Settings) *Histogram {
+func NewHistogram(s *settings.Settings) *Histogram {
 	return &Histogram{
 		s:            s,
 		height:       s.Height,
@@ -48,17 +49,17 @@ func (h *Histogram) WriteHist(writer io.Writer, pairlist Pairlist) {
 	for i, p := range pairlist {
 
 		if i == 0 {
-			maxValueWidth = len(fmt.Sprintf("%d", p.value))
-			maxPctWidth = len(fmt.Sprintf("(%2.2f%%)", float64(p.value)*1.0/float64(totalValue)*100.0))
+			maxValueWidth = len(fmt.Sprintf("%d", p.Value))
+			maxPctWidth = len(fmt.Sprintf("(%2.2f%%)", float64(p.Value)*1.0/float64(totalValue)*100.0))
 		}
 
-		tokenLen := len(p.key)
+		tokenLen := len(p.Key)
 		if tokenLen > maxTokenLen {
 			maxTokenLen = tokenLen
 		}
 
-		if p.value > maxVal {
-			maxVal = p.value
+		if p.Value > maxVal {
+			maxVal = p.Value
 		}
 
 		if uint(i) >= h.height-1 {
@@ -92,22 +93,22 @@ func (h *Histogram) WriteHist(writer io.Writer, pairlist Pairlist) {
 		outputLimit = int(h.height)
 	}
 	for i, p := range (pairlist)[:outputLimit] {
-		io.WriteString(writer, Rjust(p.key, maxTokenLen))
+		io.WriteString(writer, Rjust(p.Key, maxTokenLen))
 		io.WriteString(writer, h.regularColor)
 		io.WriteString(writer, "|")
 		io.WriteString(writer, h.ctColor)
 
-		outVal := fmt.Sprintf("%d", p.value)
+		outVal := fmt.Sprintf("%d", p.Value)
 		io.WriteString(writer, Rjust(outVal, maxValueWidth))
 		io.WriteString(writer, " ")
 
-		pctStr := fmt.Sprintf("(%2.2f%%)", float64(p.value)*1.0/float64(totalValue)*100.0)
+		pctStr := fmt.Sprintf("(%2.2f%%)", float64(p.Value)*1.0/float64(totalValue)*100.0)
 		io.WriteString(writer, h.pctColor)
 		io.WriteString(writer, Rjust(pctStr, maxPctWidth))
 		io.WriteString(writer, " ")
 
 		io.WriteString(writer, h.graphColor)
-		io.WriteString(writer, h.HistogramBar(histWidth, maxVal, p.value))
+		io.WriteString(writer, h.HistogramBar(histWidth, maxVal, p.Value))
 
 		if i == outputLimit-1 {
 			io.WriteString(writer, h.regularColor)

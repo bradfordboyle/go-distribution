@@ -1,4 +1,4 @@
-package main
+package tokenize
 
 import (
 	"bytes"
@@ -20,10 +20,10 @@ func TestKeyValueTokenizer_Tokenize(t *testing.T) {
 	if pl.Len() != 1 {
 		t.Error("Tokenize on single line didn't return single Pair")
 	}
-	if pl[0].key != "a" {
+	if pl[0].Key != "a" {
 		t.Error("Tokenize did not extract key correctly")
 	}
-	if pl[0].value != 1 {
+	if pl[0].Value != 1 {
 		t.Error("Tokenize did not extract value correctly")
 	}
 }
@@ -42,10 +42,10 @@ func TestValueKeyTokenizer_Tokenize(t *testing.T) {
 	if pl.Len() != 1 {
 		t.Error("Tokenize on single line didn't return single Pair")
 	}
-	if pl[0].key != "a" {
+	if pl[0].Key != "a" {
 		t.Error("Tokenize did not extract key correctly")
 	}
-	if pl[0].value != 1 {
+	if pl[0].Value != 1 {
 		t.Error("Tokenize did not extract value correctly")
 	}
 }
@@ -96,7 +96,7 @@ func TestRegexTokenizer_Tokenize(t *testing.T) {
 	if pl.Len() != 1 {
 		t.Error("Tokenize on buffer w/ single token didn't return single Pair")
 	}
-	if pl[0].value != 2 {
+	if pl[0].Value != 2 {
 		t.Error("Tokenize on buffer w/ single token didn't count all tokens")
 	}
 
@@ -158,10 +158,10 @@ func TestLineTokenizer_Tokenize(t *testing.T) {
 	if pl.Len() != 1 {
 		t.Error("Tokenize on buffer w/ single token didn't return single Pair")
 	}
-	if pl[0].key != "a a" {
+	if pl[0].Key != "a a" {
 		t.Error("Tokenize on buffer w/ single token use line as token")
 	}
-	if pl[0].value != 1 {
+	if pl[0].Value != 1 {
 		t.Error("Tokenize on buffer w/ single token didn't count all tokens")
 	}
 

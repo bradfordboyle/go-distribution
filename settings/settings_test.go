@@ -1,9 +1,11 @@
-package main
+package settings
 
 import (
 	"bytes"
 	"testing"
 )
+
+const RC_FILE = "--rcfile=/dev/null"
 
 func TestNewSettings(t *testing.T) {
 	testCases := []struct {

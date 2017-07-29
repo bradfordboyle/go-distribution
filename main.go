@@ -1,24 +1,27 @@
 package main
 
 import (
+	"distribution/histogram"
+	"distribution/settings"
+	"distribution/tokenize"
 	"log"
 	"os"
 )
 
 func main() {
-	s := NewSettings(os.Args[0], os.Args[1:])
+	s := settings.NewSettings(os.Args[0], os.Args[1:])
 
-	var t Tokenizer
+	var t tokenize.Tokenizer
 	if s.GraphValues == "vk" {
-		t = NewValueKeyTokenizer()
+		t = tokenize.NewValueKeyTokenizer()
 	} else if s.GraphValues == "kv" {
-		t = NewKeyValueTokenizer()
+		t = tokenize.NewKeyValueTokenizer()
 	} else if s.NumOnly != "XXX" {
 		os.Exit(0)
 	} else if s.Tokenize != "" {
-		t = NewRegexTokenizer(s.Tokenize, s.MatchRegexp)
+		t = tokenize.NewRegexTokenizer(s.Tokenize, s.MatchRegexp)
 	} else {
-		t = NewLineTokenizer(s.MatchRegexp)
+		t = tokenize.NewLineTokenizer(s.MatchRegexp)
 	}
 
 	pl, err := t.Tokenize(os.Stdin)
@@ -26,6 +29,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	h := NewHistogram(s)
+	h := histogram.NewHistogram(s)
 	h.WriteHist(os.Stdout, pl)
 }

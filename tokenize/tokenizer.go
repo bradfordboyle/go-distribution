@@ -1,7 +1,8 @@
-package main
+package tokenize
 
 import (
 	"bufio"
+	"distribution/histogram"
 	"io"
 	"regexp"
 	"strconv"
@@ -9,7 +10,7 @@ import (
 )
 
 type Tokenizer interface {
-	Tokenize(io.Reader) (Pairlist, error)
+	Tokenize(io.Reader) (histogram.Pairlist, error)
 }
 
 type preTalliedTokenizer struct {
@@ -39,8 +40,8 @@ func NewValueKeyTokenizer() Tokenizer {
 	}
 }
 
-func (p preTalliedTokenizer) Tokenize(reader io.Reader) (Pairlist, error) {
-	pl := make(Pairlist, 0)
+func (p preTalliedTokenizer) Tokenize(reader io.Reader) (histogram.Pairlist, error) {
+	pl := make(histogram.Pairlist, 0)
 
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
@@ -51,7 +52,7 @@ func (p preTalliedTokenizer) Tokenize(reader io.Reader) (Pairlist, error) {
 		if err != nil {
 			return nil, err
 		}
-		pl = append(pl, pair{key: key, value: uint(value)})
+		pl = append(pl, histogram.Pair{Key: key, Value: uint(value)})
 	}
 
 	return pl, nil
@@ -94,7 +95,7 @@ func NewRegexTokenizer(splitter string, matcher string) Tokenizer {
 	return t
 }
 
-func (r *regexTokenizer) Tokenize(reader io.Reader) (Pairlist, error) {
+func (r *regexTokenizer) Tokenize(reader io.Reader) (histogram.Pairlist, error) {
 	tokenDict := make(map[string]uint)
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
@@ -106,7 +107,7 @@ func (r *regexTokenizer) Tokenize(reader io.Reader) (Pairlist, error) {
 		}
 	}
 
-	return NewPairList(tokenDict), nil
+	return histogram.NewPairList(tokenDict), nil
 }
 
 type lineTokenizer struct {
@@ -129,7 +130,7 @@ func NewLineTokenizer(matcher string) Tokenizer {
 	return t
 }
 
-func (l lineTokenizer) Tokenize(reader io.Reader) (Pairlist, error) {
+func (l lineTokenizer) Tokenize(reader io.Reader) (histogram.Pairlist, error) {
 	tokenDict := make(map[string]uint)
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
@@ -139,5 +140,5 @@ func (l lineTokenizer) Tokenize(reader io.Reader) (Pairlist, error) {
 		}
 	}
 
-	return NewPairList(tokenDict), nil
+	return histogram.NewPairList(tokenDict), nil
 }
