@@ -10,21 +10,18 @@ func TestKeyValueTokenizer_Tokenize(t *testing.T) {
 	kv := NewKeyValueTokenizer()
 	buf := new(bytes.Buffer)
 
-	pl, _ := kv.Tokenize(buf)
-	if pl.Len() != 0 {
+	tc, _ := kv.Tokenize(buf)
+	if len(tc) != 0 {
 		t.Error("Tokenize on empty reader didn't return an empty PairList")
 	}
 
 	buf.WriteString("a 1\n")
-	pl, _ = kv.Tokenize(buf)
-	if pl.Len() != 1 {
+	tc, _ = kv.Tokenize(buf)
+	if len(tc) != 1 {
 		t.Error("Tokenize on single line didn't return single Pair")
 	}
-	if pl[0].Key != "a" {
-		t.Error("Tokenize did not extract key correctly")
-	}
-	if pl[0].Value != 1 {
-		t.Error("Tokenize did not extract value correctly")
+	if v, ok := tc["a"]; !ok || v != 1 {
+		t.Error("Tokenize did not extract key/value correctly")
 	}
 }
 
@@ -32,21 +29,18 @@ func TestValueKeyTokenizer_Tokenize(t *testing.T) {
 	vk := NewValueKeyTokenizer()
 	buf := new(bytes.Buffer)
 
-	pl, _ := vk.Tokenize(buf)
-	if pl.Len() != 0 {
+	tc, _ := vk.Tokenize(buf)
+	if len(tc) != 0 {
 		t.Error("Tokenize on empty reader didn't return an empty PairList")
 	}
 
 	buf.WriteString("1 a\n")
-	pl, _ = vk.Tokenize(buf)
-	if pl.Len() != 1 {
+	tc, _ = vk.Tokenize(buf)
+	if len(tc) != 1 {
 		t.Error("Tokenize on single line didn't return single Pair")
 	}
-	if pl[0].Key != "a" {
-		t.Error("Tokenize did not extract key correctly")
-	}
-	if pl[0].Value != 1 {
-		t.Error("Tokenize did not extract value correctly")
+	if v, ok := tc["a"]; !ok || v != 1 {
+		t.Error("Tokenize did not extract key/value correctly")
 	}
 }
 
@@ -80,24 +74,24 @@ func TestRegexTokenizer_Tokenize(t *testing.T) {
 	r := NewRegexTokenizer("white", "word")
 	buf := new(bytes.Buffer)
 
-	pl, _ := r.Tokenize(buf)
-	if pl.Len() != 0 {
+	tc, _ := r.Tokenize(buf)
+	if len(tc) != 0 {
 		t.Error("Tokenize on empty reader didn't return an empty PairList")
 	}
 
 	buf.WriteString("a\n")
-	pl, _ = r.Tokenize(buf)
-	if pl.Len() != 1 {
+	tc, _ = r.Tokenize(buf)
+	if len(tc) != 1 {
 		t.Error("Tokenize on single line didn't return single Pair")
 	}
 
 	buf.WriteString("a a\n")
-	pl, _ = r.Tokenize(buf)
-	if pl.Len() != 1 {
+	tc, _ = r.Tokenize(buf)
+	if len(tc) != 1 {
 		t.Error("Tokenize on buffer w/ single token didn't return single Pair")
 	}
-	if pl[0].Value != 2 {
-		t.Error("Tokenize on buffer w/ single token didn't count all tokens")
+	if v, ok := tc["a"]; !ok || v != 2 {
+		t.Error("Tokenize did not extract key/value correctly")
 	}
 
 	testCase := `Job ` + "`" + `cron.daily'
@@ -113,8 +107,8 @@ Sent 19243191
 `
 	buf = new(bytes.Buffer)
 	buf.WriteString(testCase)
-	pl, _ = r.Tokenize(buf)
-	if pl.Len() == 0 {
+	tc, _ = r.Tokenize(buf)
+	if len(tc) == 0 {
 		t.Error("Tokenize on buffer w/ real data is failing")
 	}
 }
@@ -142,27 +136,24 @@ func TestLineTokenizer_Tokenize(t *testing.T) {
 	l := NewLineTokenizer(".")
 	buf := new(bytes.Buffer)
 
-	pl, _ := l.Tokenize(buf)
-	if pl.Len() != 0 {
+	tc, _ := l.Tokenize(buf)
+	if len(tc) != 0 {
 		t.Error("Tokenize on empty reader didn't return an empty PairList")
 	}
 
 	buf.WriteString("a\n")
-	pl, _ = l.Tokenize(buf)
-	if pl.Len() != 1 {
+	tc, _ = l.Tokenize(buf)
+	if len(tc) != 1 {
 		t.Error("Tokenize on single line didn't return single Pair")
 	}
 
 	buf.WriteString("a a\n")
-	pl, _ = l.Tokenize(buf)
-	if pl.Len() != 1 {
+	tc, _ = l.Tokenize(buf)
+	if len(tc) != 1 {
 		t.Error("Tokenize on buffer w/ single token didn't return single Pair")
 	}
-	if pl[0].Key != "a a" {
-		t.Error("Tokenize on buffer w/ single token use line as token")
-	}
-	if pl[0].Value != 1 {
-		t.Error("Tokenize on buffer w/ single token didn't count all tokens")
+	if v, ok := tc["a a"]; !ok || v != 1 {
+		t.Error("Tokenize did not extract key/value correctly")
 	}
 
 }

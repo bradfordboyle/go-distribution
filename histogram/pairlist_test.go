@@ -24,7 +24,7 @@ func TestNewPairList(t *testing.T) {
 }
 
 func TestPairlist_Len(t *testing.T) {
-	pl := Pairlist([]Pair{
+	pl := pairlist([]pair{
 		{Key: "a", Value: 1},
 		{Key: "a", Value: 2},
 		{Key: "b", Value: 1},
@@ -35,7 +35,7 @@ func TestPairlist_Len(t *testing.T) {
 }
 
 func TestPairlist_Less(t *testing.T) {
-	pl := Pairlist([]Pair{
+	pl := pairlist([]pair{
 		{Key: "a", Value: 1},
 		{Key: "a", Value: 2},
 		{Key: "b", Value: 1},
@@ -51,7 +51,7 @@ func TestPairlist_Less(t *testing.T) {
 }
 
 func TestPairlist_Swap(t *testing.T) {
-	pl := Pairlist([]Pair{
+	pl := pairlist([]pair{
 		{Key: "a", Value: 1},
 		{Key: "a", Value: 2},
 		{Key: "b", Value: 1},
@@ -73,7 +73,7 @@ func TestPairlist_Swap(t *testing.T) {
 }
 
 func TestPairlist_TotalValues(t *testing.T) {
-	pl := Pairlist([]Pair{
+	pl := pairlist([]pair{
 		{Key: "a", Value: 1},
 		{Key: "a", Value: 2},
 		{Key: "b", Value: 1},

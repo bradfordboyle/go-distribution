@@ -36,7 +36,8 @@ func NewHistogram(s *settings.Settings) *Histogram {
 	}
 }
 
-func (h *Histogram) WriteHist(writer io.Writer, pairlist Pairlist) {
+func (h *Histogram) WriteHist(writer io.Writer, tokenCounts map[string]uint) {
+	pairlist := NewPairList(tokenCounts)
 	maxTokenLen := 0
 	maxVal := uint(0)
 

@@ -57,19 +57,19 @@ func TestHistogram_WriteHist(t *testing.T) {
 	testCases := []struct {
 		name     string
 		args     []string
-		pl       Pairlist
+		counts   map[string]uint
 		expected string
 	}{
 		{
 			name:     "Empty PairList",
 			args:     []string{RC_FILE, KV, WIDTH},
-			pl:       Pairlist{},
+			counts:   make(map[string]uint),
 			expected: "",
 		},
 		{
 			name:     "PairList w/ two tokens",
 			args:     []string{RC_FILE, KV, WIDTH},
-			pl:       Pairlist{Pair{"a", 1}, Pair{"b", 2}},
+			counts:   map[string]uint{"a": 1, "b": 2},
 			expected: "b|2 (66.67%) --\na|1 (33.33%) -",
 		},
 	}
@@ -80,7 +80,7 @@ func TestHistogram_WriteHist(t *testing.T) {
 			h := NewHistogram(s)
 			buf := new(bytes.Buffer)
 
-			h.WriteHist(buf, tc.pl)
+			h.WriteHist(buf, tc.counts)
 
 			if buf.String() != tc.expected {
 				t.Errorf("WriteHist incorrect: expected %s; actual %s", tc.expected, buf.String())

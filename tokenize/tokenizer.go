@@ -2,7 +2,6 @@ package tokenize
 
 import (
 	"bufio"
-	"distribution/histogram"
 	"io"
 	"regexp"
 	"strconv"
@@ -10,7 +9,7 @@ import (
 )
 
 type Tokenizer interface {
-	Tokenize(io.Reader) (histogram.Pairlist, error)
+	Tokenize(io.Reader) (map[string]uint, error)
 }
 
 type preTalliedTokenizer struct {
@@ -40,8 +39,8 @@ func NewValueKeyTokenizer() Tokenizer {
 	}
 }
 
-func (p preTalliedTokenizer) Tokenize(reader io.Reader) (histogram.Pairlist, error) {
-	pl := make(histogram.Pairlist, 0)
+func (p preTalliedTokenizer) Tokenize(reader io.Reader) (map[string]uint, error) {
+	tokenCounts := make(map[string]uint)
 
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
@@ -52,10 +51,10 @@ func (p preTalliedTokenizer) Tokenize(reader io.Reader) (histogram.Pairlist, err
 		if err != nil {
 			return nil, err
 		}
-		pl = append(pl, histogram.Pair{Key: key, Value: uint(value)})
+		tokenCounts[key] = uint(value)
 	}
 
-	return pl, nil
+	return tokenCounts, nil
 }
 
 type regexTokenizer struct {
@@ -95,19 +94,19 @@ func NewRegexTokenizer(splitter string, matcher string) Tokenizer {
 	return t
 }
 
-func (r *regexTokenizer) Tokenize(reader io.Reader) (histogram.Pairlist, error) {
-	tokenDict := make(map[string]uint)
+func (r *regexTokenizer) Tokenize(reader io.Reader) (map[string]uint, error) {
+	tokenCounts := make(map[string]uint)
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		line := strings.TrimRight(scanner.Text(), "\n")
 		for _, token := range r.splitter.Split(line, -1) {
 			if r.matcher.MatchString(token) {
-				tokenDict[token]++
+				tokenCounts[token]++
 			}
 		}
 	}
 
-	return histogram.NewPairList(tokenDict), nil
+	return tokenCounts, nil
 }
 
 type lineTokenizer struct {
@@ -130,15 +129,15 @@ func NewLineTokenizer(matcher string) Tokenizer {
 	return t
 }
 
-func (l lineTokenizer) Tokenize(reader io.Reader) (histogram.Pairlist, error) {
-	tokenDict := make(map[string]uint)
+func (l lineTokenizer) Tokenize(reader io.Reader) (map[string]uint, error) {
+	tokenCounts := make(map[string]uint)
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		line := strings.TrimRight(scanner.Text(), "\n")
 		if l.matcher.MatchString(line) {
-			tokenDict[line]++
+			tokenCounts[line]++
 		}
 	}
 
-	return histogram.NewPairList(tokenDict), nil
+	return tokenCounts, nil
 }
