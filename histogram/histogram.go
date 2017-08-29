@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"go-distribution/settings"
+	"github.com/bradfordboyle/go-distribution/settings"
 
 	"github.com/dustin/go-humanize"
 )

@@ -6,6 +6,7 @@ Testing
 -------
 
 ```sh
+glide install
 go test -v ./...
 cd acceptance-tests && ./runTests.sh && cd -
 ```
