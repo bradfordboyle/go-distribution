@@ -1,4 +1,4 @@
-package main
+package tokenize
 
 import (
 	"bufio"
@@ -9,7 +9,7 @@ import (
 )
 
 type Tokenizer interface {
-	Tokenize(io.Reader) (Pairlist, error)
+	Tokenize(io.Reader) (map[string]uint, error)
 }
 
 type preTalliedTokenizer struct {
@@ -39,8 +39,8 @@ func NewValueKeyTokenizer() Tokenizer {
 	}
 }
 
-func (p preTalliedTokenizer) Tokenize(reader io.Reader) (Pairlist, error) {
-	pl := make(Pairlist, 0)
+func (p preTalliedTokenizer) Tokenize(reader io.Reader) (map[string]uint, error) {
+	tokenCounts := make(map[string]uint)
 
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
@@ -51,10 +51,10 @@ func (p preTalliedTokenizer) Tokenize(reader io.Reader) (Pairlist, error) {
 		if err != nil {
 			return nil, err
 		}
-		pl = append(pl, pair{key: key, value: uint(value)})
+		tokenCounts[key] = uint(value)
 	}
 
-	return pl, nil
+	return tokenCounts, nil
 }
 
 type regexTokenizer struct {
@@ -94,19 +94,19 @@ func NewRegexTokenizer(splitter string, matcher string) Tokenizer {
 	return t
 }
 
-func (r *regexTokenizer) Tokenize(reader io.Reader) (Pairlist, error) {
-	tokenDict := make(map[string]uint)
+func (r *regexTokenizer) Tokenize(reader io.Reader) (map[string]uint, error) {
+	tokenCounts := make(map[string]uint)
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		line := strings.TrimRight(scanner.Text(), "\n")
 		for _, token := range r.splitter.Split(line, -1) {
 			if r.matcher.MatchString(token) {
-				tokenDict[token]++
+				tokenCounts[token]++
 			}
 		}
 	}
 
-	return NewPairList(tokenDict), nil
+	return tokenCounts, nil
 }
 
 type lineTokenizer struct {
@@ -129,15 +129,15 @@ func NewLineTokenizer(matcher string) Tokenizer {
 	return t
 }
 
-func (l lineTokenizer) Tokenize(reader io.Reader) (Pairlist, error) {
-	tokenDict := make(map[string]uint)
+func (l lineTokenizer) Tokenize(reader io.Reader) (map[string]uint, error) {
+	tokenCounts := make(map[string]uint)
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		line := strings.TrimRight(scanner.Text(), "\n")
 		if l.matcher.MatchString(line) {
-			tokenDict[line]++
+			tokenCounts[line]++
 		}
 	}
 
-	return NewPairList(tokenDict), nil
+	return tokenCounts, nil
 }

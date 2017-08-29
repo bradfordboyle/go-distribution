@@ -1,7 +1,8 @@
-package main
+package histogram
 
 import (
 	"bytes"
+	"go-distribution/settings"
 	"testing"
 )
 
@@ -34,7 +35,7 @@ func TestHistogram_HistogramBar(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run("something", func(t *testing.T) {
-			s := NewSettings("testing", tc.args)
+			s := settings.NewSettings("testing", tc.args)
 			h := NewHistogram(s)
 
 			bar := h.HistogramBar(tc.histWidth, tc.maxVal, tc.barVal)
@@ -56,30 +57,30 @@ func TestHistogram_WriteHist(t *testing.T) {
 	testCases := []struct {
 		name     string
 		args     []string
-		pl       Pairlist
+		counts   map[string]uint
 		expected string
 	}{
 		{
 			name:     "Empty PairList",
 			args:     []string{RC_FILE, KV, WIDTH},
-			pl:       Pairlist{},
+			counts:   make(map[string]uint),
 			expected: "",
 		},
 		{
 			name:     "PairList w/ two tokens",
 			args:     []string{RC_FILE, KV, WIDTH},
-			pl:       Pairlist{pair{"a", 1}, pair{"b", 2}},
+			counts:   map[string]uint{"a": 1, "b": 2},
 			expected: "b|2 (66.67%) --\na|1 (33.33%) -",
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewSettings("testing", tc.args)
+			s := settings.NewSettings("testing", tc.args)
 			h := NewHistogram(s)
 			buf := new(bytes.Buffer)
 
-			h.WriteHist(buf, tc.pl)
+			h.WriteHist(buf, tc.counts)
 
 			if buf.String() != tc.expected {
 				t.Errorf("WriteHist incorrect: expected %s; actual %s", tc.expected, buf.String())

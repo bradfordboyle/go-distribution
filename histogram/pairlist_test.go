@@ -1,4 +1,4 @@
-package main
+package histogram
 
 import (
 	"testing"
@@ -13,21 +13,21 @@ func TestNewPairList(t *testing.T) {
 	}
 	pl := NewPairList(m)
 	for _, p := range pl {
-		i, ok := m[p.key]
+		i, ok := m[p.Key]
 		if !ok {
-			t.Errorf("Original map did not contaim %s", p.key)
+			t.Errorf("Original map did not contaim %s", p.Key)
 		}
-		if i != p.value {
-			t.Errorf("PairList had the wrong value for %s; expected %d, actual %d", p.key, i, p.value)
+		if i != p.Value {
+			t.Errorf("PairList had the wrong value for %s; expected %d, actual %d", p.Key, i, p.Value)
 		}
 	}
 }
 
 func TestPairlist_Len(t *testing.T) {
-	pl := Pairlist([]pair{
-		{key: "a", value: 1},
-		{key: "a", value: 2},
-		{key: "b", value: 1},
+	pl := pairlist([]pair{
+		{Key: "a", Value: 1},
+		{Key: "a", Value: 2},
+		{Key: "b", Value: 1},
 	})
 	if pl.Len() != 3 {
 		t.Errorf("PairList had the wrong value; expected %d, actual %d", 3, pl.Len())
@@ -35,10 +35,10 @@ func TestPairlist_Len(t *testing.T) {
 }
 
 func TestPairlist_Less(t *testing.T) {
-	pl := Pairlist([]pair{
-		{key: "a", value: 1},
-		{key: "a", value: 2},
-		{key: "b", value: 1},
+	pl := pairlist([]pair{
+		{Key: "a", Value: 1},
+		{Key: "a", Value: 2},
+		{Key: "b", Value: 1},
 	})
 
 	if !pl.Less(0, 1) {
@@ -51,32 +51,32 @@ func TestPairlist_Less(t *testing.T) {
 }
 
 func TestPairlist_Swap(t *testing.T) {
-	pl := Pairlist([]pair{
-		{key: "a", value: 1},
-		{key: "a", value: 2},
-		{key: "b", value: 1},
+	pl := pairlist([]pair{
+		{Key: "a", Value: 1},
+		{Key: "a", Value: 2},
+		{Key: "b", Value: 1},
 	})
 
 	pl.Swap(0, 2)
 
-	if pl[0].value != 1 && pl[0].key != "b" {
+	if pl[0].Value != 1 && pl[0].Key != "b" {
 		t.Error("PairList.Swap() did no swap correctly")
 	}
 
-	if pl[1].value != 2 && pl[1].key != "a" {
+	if pl[1].Value != 2 && pl[1].Key != "a" {
 		t.Error("PairList.Swap() did no swap correctly")
 	}
 
-	if pl[2].value != 1 && pl[2].key != "a" {
+	if pl[2].Value != 1 && pl[2].Key != "a" {
 		t.Error("PairList.Swap() did no swap correctly")
 	}
 }
 
 func TestPairlist_TotalValues(t *testing.T) {
-	pl := Pairlist([]pair{
-		{key: "a", value: 1},
-		{key: "a", value: 2},
-		{key: "b", value: 1},
+	pl := pairlist([]pair{
+		{Key: "a", Value: 1},
+		{Key: "a", Value: 2},
+		{Key: "b", Value: 1},
 	})
 
 	if pl.TotalValues() != 4 {
