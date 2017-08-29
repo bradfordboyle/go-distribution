@@ -1,11 +1,12 @@
 package main
 
 import (
-	"go-distribution/histogram"
-	"go-distribution/settings"
-	"go-distribution/tokenize"
 	"log"
 	"os"
+
+	"github.com/bradfordboyle/go-distribution/histogram"
+	"github.com/bradfordboyle/go-distribution/settings"
+	"github.com/bradfordboyle/go-distribution/tokenize"
 )
 
 func main() {

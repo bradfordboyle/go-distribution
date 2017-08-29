@@ -1,5 +1,5 @@
-hash: b8c86f58673ff8b2ada3b0bb0db3ea770df958e27007f7e6b77862fee4e4460b
-updated: 2017-08-28T21:09:55.058611287-07:00
+hash: bbbe4415b06d2d833766e39dbf4aab56ca401b0873b01851f4a5676939825500
+updated: 2017-08-28T22:58:01.941147595-07:00
 imports:
 - name: github.com/dustin/go-humanize
   version: 79e699ccd02f240a1f1fbbdcee7e64c1c12e41aa

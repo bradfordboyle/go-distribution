@@ -2,8 +2,9 @@ package histogram
 
 import (
 	"bytes"
-	"go-distribution/settings"
 	"testing"
+
+	"github.com/bradfordboyle/go-distribution/settings"
 )
 
 func TestLjust(t *testing.T) {

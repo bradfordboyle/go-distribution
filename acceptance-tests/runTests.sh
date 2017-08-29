@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # make sure env is setup proper
 if [ ! -x "./distribution" ] ; then
@@ -52,7 +52,8 @@ for i in 01 02 03 04 05 06 07 ; do
 	# which are line-erase signals used for updating the screen interactively, and
 	# thus don't need to be stored or compared.
 	if [ "$verbose" = "v" ]; then
-		diff -w -I "runtime:" -I "" stderr.$i.expected.txt stderr.$i.actual.txt
+		diff -w -I "runtime:" -I "
+" stderr.$i.expected.txt stderr.$i.actual.txt
 	fi
 done
 
