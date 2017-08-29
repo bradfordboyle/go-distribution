@@ -2,7 +2,7 @@
 
 # make sure env is setup proper
 if [ ! -x "./distribution" ] ; then
-	go build ..
+	go build -o distribution ../main.go
 fi
 
 distribution="./distribution"
