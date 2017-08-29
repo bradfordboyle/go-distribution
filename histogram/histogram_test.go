@@ -2,7 +2,7 @@ package histogram
 
 import (
 	"bytes"
-	"distribution/settings"
+	"go-distribution/settings"
 	"testing"
 )
 

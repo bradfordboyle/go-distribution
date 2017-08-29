@@ -1,9 +1,9 @@
 package main
 
 import (
-	"distribution/histogram"
-	"distribution/settings"
-	"distribution/tokenize"
+	"go-distribution/histogram"
+	"go-distribution/settings"
+	"go-distribution/tokenize"
 	"log"
 	"os"
 )
