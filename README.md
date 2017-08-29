@@ -1,5 +1,7 @@
 go-distribution
 ===============
+[![Build Status](https://travis-ci.org/bradfordboyle/go-distribution.svg?branch=master)](https://travis-ci.org/bradfordboyle/go-distribution)
+
 A Go version of philovivero's [distribution][] script.
 
 Testing
