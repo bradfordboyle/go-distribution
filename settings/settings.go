@@ -104,10 +104,8 @@ func NewSettings(scriptName string, args []string) *Settings {
 	}
 
 	// parse opts from the rcFile if it exists
-	file, err := os.Open(rcFile)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// don't die or in fact do anything if rcfile doesn't exist
+	file, _ := os.Open(rcFile)
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
