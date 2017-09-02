@@ -9,12 +9,16 @@ matrix:
     - go: master
   fast_finish: true
 install:
-  - # Do nothing. This is needed to prevent default install action "go get -t -v ./..." from happening here (we want it to happen inside script step).
+  - go get golang.org/x/tools/cmd/cover
+  - go get github.com/mattn/goveralls
+  - go get github.com/modocache/gover
 script:
   - go get -v github.com/Masterminds/glide
   - cd $GOPATH/src/github.com/Masterminds/glide && git checkout tags/v0.12.3 && go install && cd -
   - glide install
   - diff -u <(echo -n) <(gofmt -d -s .)
   - go tool vet .
-  - go test -v -race ./...
+  - go list -f '{{if len .TestGoFiles}}"go test -coverprofile={{.Dir}}/.coverprofile {{.ImportPath}}"{{end}}' ./... | xargs -n 1 sh -c
+  - gover
+  - goveralls -coverprofile=gover.coverprofile -service=travis-ci
   - cd acceptance-tests && ./runTests.sh && cd -
