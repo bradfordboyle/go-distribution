@@ -180,6 +180,7 @@ func NewSettings(scriptName string, args []string) *Settings {
 	if s.Size == "full" || s.Size == "fl" || s.Size == "f" {
 		// tput will tell us the term width/height even if input is stdin
 		s.Width, s.Height = TerminalSize()
+		s.Height -= 3
 		// need room for the verbosity output
 		if s.Verbose {
 			s.Height -= 4
